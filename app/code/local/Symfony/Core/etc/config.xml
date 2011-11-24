@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Symfony_Core>
+            <version>0.1.0</version>
+        </Symfony_Core>
+    </modules> 
+    <global>
+      <helpers>
+            <menu>
+                <class>Symfony_Core_Helper</class>
+            </menu>
+        </helpers>
+	    <events>
+	        <controller_front_init_before>
+	            <observers>
+	                <init_store_from_ip>
+	                    <type>singleton</type>
+	                    <class>Symfony_Core_HttpKernel_Kernel</class>
+	                    <method>bootstrap</method>
+	                </init_store_from_ip>
+	            </observers>
+	        </controller_front_init_before>    
+	    </events>
+	    
+	    <symfony>
+	       <app_dir>{{root_dir}}/../../symfony/app</app_dir>
+	       <kernel>AppKernel</kernel>
+	       <env>dev</env>
+	    </symfony>        	    
+        
+    </global>
+</config>
