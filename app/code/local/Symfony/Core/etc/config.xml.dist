@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Symfony_Core>
+            <version>0.1.0</version>
+        </Symfony_Core>
+    </modules> 
+    <global>    
+        <!-- Register a singleton to retrieve Symfony services from magento -->
+		<models>
+		    <di>
+		        <class>Symfony_Core_DependencyInjection_Container</class>            
+		    </di>
+		</models>
+        <!-- Make the EngineInterface of Symfony available to magento to render its templates -->
+        <!--  requires https://github.com/liip/LiipMagentoBundle  -->		
+        <blocks>
+            <template>
+                <class>Symfony_Core_Block</class>
+            </template>
+        </blocks>		        
+        <!-- Empty helper class -->        
+        <helpers>
+            <menu>
+                <class>Symfony_Core_Helper</class>
+            </menu>
+        </helpers>
+        <!-- Listen to the first magento event to bootstrap the Kernel -->
+	    <events>
+            <symfony_on_kernel_request>
+                <observers>
+                    <symfony_request>
+                        <type>singleton</type>
+                        <class>Symfony_Core_HttpKernel_Kernel</class>
+                        <method>onKernelRequestInit</method>
+                    </symfony_request>
+                </observers>
+            </symfony_on_kernel_request>    
+	    
+	        <controller_front_init_before>
+	            <observers>
+	                <init_store_from_ip>
+	                    <type>singleton</type>
+	                    <class>Symfony_Core_HttpKernel_Kernel</class>
+	                    <method>bootstrap</method>
+	                </init_store_from_ip>
+	            </observers>
+	        </controller_front_init_before>    
+	    </events>
+	    
+	    <!-- Config -->
+	    <symfony>
+	       <!-- Path to the Symfony app directory (containing your Kernel(s) )-->
+	       <app_dir>{{root_dir}}/../../symfony/app</app_dir>
+	       <!-- Name of the Kernel to boot -->	       
+	       <kernel>AppKernel</kernel>
+            <!-- Name of the environment to boot -->	       
+	       <env>dev</env>
+	    </symfony>        	    
+        
+    </global>
+</config>

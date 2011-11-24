@@ -1,5 +1,17 @@
 <?php
 
+use Symfony\Component\HttpFoundation\Request;
+
+/**
+ * 
+ * Observer for the controller_front_init_before Magento event.
+ * 
+ * Bootstraps the Symfony Kernel of your app.
+ * 
+ * 
+ * @author Robert Gruendler <r.gruendler@gmail.com>
+ *
+ */
 class Symfony_Core_HttpKernel_Kernel {
 
     /** 
@@ -8,12 +20,12 @@ class Symfony_Core_HttpKernel_Kernel {
     private $kernel = null;    
     
     public function bootstrap() {
-                
-        if ($this->kernel !== null)
+
+        // symfony is already running
+        if ($this->kernel !== null || class_exists("Symfony\Component\HttpKernel\Kernel"))
             return;
-        
-        $config = Mage::getConfig();        
-        $symfony = $config->getNode('global/symfony')->asArray();
+                
+        $symfony =  Mage::getConfig()->getNode('global/symfony')->asArray();
         
         $kernelClass = $symfony['kernel'];
         $base = $symfony['app_dir'];        
@@ -31,12 +43,35 @@ class Symfony_Core_HttpKernel_Kernel {
             throw new \Exception("Unable to load the Symfony Kernel from " . $kernelFile);
         }
 
-        require_once $bootstrapFile;   
+        require_once $bootstrapFile;
         require_once $kernelFile;
         
         $this->kernel = new $kernelClass($env, false);
         $this->kernel->loadClassCache();
-        $this->kernel->boot();        
+        $this->kernel->boot();
+        
+        // enter the request scope
+        $this->kernel->getContainer()->enterScope('request');
+        
+        $container = Mage::getSingleton('Symfony_Core_DependencyInjection_Container');
+        $container->setKernel($this->kernel);
         
     }
+    
+
+    /**
+     * 
+     * Handle the symfony_on_kernel_request event fired by Symfony to set the 
+     * service container. 
+     * 
+     * @param Varien_Event_Observer $event
+     */
+    public function onKernelRequestInit(Varien_Event_Observer $event) {
+        
+        $data = $event->getData();        
+        $container = Mage::getSingleton('Symfony_Core_DependencyInjection_Container');
+        $container->setContainer($data['container']);
+        
+    }
+        
 }
