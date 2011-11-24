@@ -36,11 +36,7 @@ class Symfony_Core_HttpKernel_Kernel {
         
         $this->kernel = new $kernelClass($env, false);
         $this->kernel->loadClassCache();
-        $this->kernel->boot();
-        
-        die('kernel');
+        $this->kernel->boot();        
         
     }
-        
-
 }
