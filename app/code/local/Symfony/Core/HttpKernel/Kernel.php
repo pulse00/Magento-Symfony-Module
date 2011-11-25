@@ -52,9 +52,8 @@ class Symfony_Core_HttpKernel_Kernel {
         
         // enter the request scope
         $container = $this->kernel->getContainer();
-        $container->enterScope('request');        
-        $request = Request::createFromGlobals();
-        $container->set('request', new Request());
+        $container->enterScope('request');
+        $container->set('request', Request::createFromGlobals());
         
         $mageContainer = Mage::getSingleton('Symfony_Core_DependencyInjection_Container');
         $mageContainer->setKernel($this->kernel);
