@@ -27,16 +27,6 @@
         </helpers>
         <!-- Listen to the first magento event to bootstrap the Kernel -->
 	    <events>
-            <symfony_on_kernel_request>
-                <observers>
-                    <symfony_request>
-                        <type>singleton</type>
-                        <class>Symfony_Core_HttpKernel_Kernel</class>
-                        <method>onKernelRequestInit</method>
-                    </symfony_request>
-                </observers>
-            </symfony_on_kernel_request>    
-	    
 	        <controller_front_init_before>
 	            <observers>
 	                <init_store_from_ip>
@@ -56,6 +46,9 @@
 	       <kernel>AppKernel</kernel>
             <!-- Name of the environment to boot -->	       
 	       <env>dev</env>
+	       <!-- only needed if it's a alias setup, ie. www.example.com/shop to generate
+	       the correct Symfony routes  -->
+	       <alias>/shop</alias>	       
 	    </symfony>        	    
         
     </global>

@@ -1,6 +1,9 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+
+
 
 /**
  * 
@@ -25,8 +28,8 @@ class Symfony_Core_HttpKernel_Kernel {
         if ($this->kernel !== null || class_exists("Symfony\Component\HttpKernel\Kernel"))
             return;
                 
-        $symfony =  Mage::getConfig()->getNode('global/symfony')->asArray();
-        
+        $symfony =  Mage::getConfig()->getNode('global/symfony')->asArray();        
+        $alias = isset($symfony['alias']) ? $symfony['alias'] : null;
         $kernelClass = $symfony['kernel'];
         $base = $symfony['app_dir'];        
         $placeHolder = "{{root_dir}}";        
@@ -53,10 +56,25 @@ class Symfony_Core_HttpKernel_Kernel {
         // enter the request scope
         $container = $this->kernel->getContainer();
         $container->enterScope('request');
-        $container->set('request', Request::createFromGlobals());
+        $request = Symfony_Core_HttpFoundation_AliasRequest::createFromGlobals();
+        $request->setAlias($alias);
+        $container->set('request', $request);
         
         $mageContainer = Mage::getSingleton('Symfony_Core_DependencyInjection_Container');
         $mageContainer->setKernel($this->kernel);
+        
+        $security = $container->get('security.context');
+        $dispatcher = $container->get('event_dispatcher');        
+        
+        try {
+            // dispatch the kernel.request so the security contexts gets initialized properly            
+            $event = new GetResponseEvent($kernel, $request, Symfony\Component\HttpKernel\HttpKernelInterface::MASTER_REQUEST);
+            $dispatcher->dispatch(Symfony\Component\HttpKernel\KernelEvents::REQUEST, $event);
+            
+        } catch (Exception $e) {
+            // the event will fail because the alias cannot be matched by the router, but the
+            // security context is properly initialized
+        }
         
     }
     
@@ -73,6 +91,9 @@ class Symfony_Core_HttpKernel_Kernel {
         $data = $event->getData();        
         $container = Mage::getSingleton('Symfony_Core_DependencyInjection_Container');
         $container->setContainer($data['container']);
+        
+        // initialize the Magento twig extension during a Symfony request
+        \Mage::getSingleton('Symfony_Core_Templating_Engine');
         
     }
         
